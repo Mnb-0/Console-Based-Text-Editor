@@ -1,4 +1,4 @@
-//Console Based Text Editor Using Ncurses Library
+// Console Based Text Editor Using Ncurses Library
 #include <iostream>
 #include <string>
 #include <fstream>
@@ -134,7 +134,6 @@ public:
     {
         this->top = top;
     }
-
 };
 
 /*Doubly Linked List: Store the text in the notepad, with each letter as a node.*/
@@ -156,7 +155,6 @@ struct ListNode
         next = nullptr;
         prev = nullptr;
     }
-
 };
 
 class TextList
@@ -166,7 +164,6 @@ class TextList
     ListNode *cursor;
 
 public:
-
     TextList()
     {
         head = nullptr;
@@ -329,7 +326,177 @@ public:
     {
         this->cursor = cursor;
     }
-    
+};
+
+/*Store dictionary words to support fast lookups and suggest
+corrections.*/
+struct TreeNode
+{
+    string word;
+    TreeNode *left;
+    TreeNode *right;
+
+    TreeNode(string word = "")
+    {
+        this->word = word;
+        left = nullptr;
+        right = nullptr;
+    }
+
+    ~TreeNode()
+    {
+        left = nullptr;
+        right = nullptr;
+    }
+};
+
+class Dictionary
+{
+    TreeNode *root;
+
+public:
+    Dictionary()
+    {
+        root = nullptr;
+    }
+
+    ~Dictionary()
+    {
+        clear(root);
+    }
+
+    void clear(TreeNode *node)
+    {
+        if (node == nullptr)
+        {
+            return;
+        }
+        clear(node->left);
+        clear(node->right);
+        delete node;
+    }
+
+    void insert(string word)
+    {
+        root = insert(root, word);
+    }
+
+    TreeNode *insert(TreeNode *node, string word)
+    {
+        if (node == nullptr)
+        {
+            return new TreeNode(word);
+        }
+        if (word < node->word)
+        {
+            node->left = insert(node->left, word);
+        }
+        else if (word > node->word)
+        {
+            node->right = insert(node->right, word);
+        }
+        return node;
+    }
+
+    bool search(string word)
+    {
+        return search(root, word);
+    }
+
+    bool search(TreeNode *node, string word)
+    {
+        if (node == nullptr)
+        {
+            return false;
+        }
+        if (word == node->word)
+        {
+            return true;
+        }
+        if (word < node->word)
+        {
+            return search(node->left, word);
+        }
+        return search(node->right, word);
+    }
+
+    void suggest(string word)
+    {
+        suggest(root, word);
+    }
+
+    void suggest(TreeNode *node, string word)
+    {
+        if (node == nullptr)
+        {
+            return;
+        }
+        if (node->word.find(word) == 0)
+        {
+            cout << node->word << endl;
+        }
+        if (word < node->word)
+        {
+            suggest(node->left, word);
+        }
+        suggest(node->right, word);
+    }
+
+    TreeNode *getRoot()
+    {
+        return root;
+    }
+
+    void setRoot(TreeNode *root)
+    {
+        this->root = root;
+    }
+
+    void print()
+    {
+        print(root);
+    }
+
+    void print(TreeNode *node)
+    {
+        if (node == nullptr)
+        {
+            return;
+        }
+        print(node->left);
+        cout << node->word << endl;
+        print(node->right);
+    }
+
+    void load(string filename)
+    {
+        ifstream file(filename);
+        string word;
+        while (file >> word)
+        {
+            insert(word);
+        }
+        file.close();
+    }
+
+    void save(string filename)
+    {
+        ofstream file(filename);
+        save(root, file);
+        file.close();
+    }
+
+    void save(TreeNode *node, ofstream &file)
+    {
+        if (node == nullptr)
+        {
+            return;
+        }
+        save(node->left, file);
+        file << node->word << endl;
+        save(node->right, file);
+    }
+
 };
 
 int main()
