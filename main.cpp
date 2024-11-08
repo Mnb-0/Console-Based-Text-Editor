@@ -1,18 +1,22 @@
+//Console Based Text Editor Using Ncurses Library
 #include <iostream>
 #include <string>
 #include <fstream>
 #include <ncurses.h>
 using namespace std;
 
-class StackNode
+/*Stack/Queue etc for Word Formation: Track the letters of the most recent
+word in a stack or queue, allowing easy access when spell-checking is
+triggered.*/
+
+struct StackNode
 {
-public:
-    char data;
+    char letter;
     StackNode *next;
 
-    StackNode(char data = 0)
+    StackNode(char letter = ' ')
     {
-        this->data = data;
+        this->letter = letter;
         this->next = NULL;
     }
 
@@ -22,20 +26,19 @@ public:
     }
 };
 
-//Stack to hold characters of words inserted by user which form words
 class Stack
 {
-public:
     StackNode *top;
 
+public:
     Stack()
     {
-        top = NULL;
+        top = nullptr;
     }
 
     ~Stack()
     {
-        while (top != NULL)
+        while (top != nullptr)
         {
             StackNode *temp = top;
             top = top->next;
@@ -43,40 +46,113 @@ public:
         }
     }
 
-    void push(char data)
+    void push(char letter)
     {
-        StackNode *newNode = new StackNode(data);
+        StackNode *newNode = new StackNode(letter);
         newNode->next = top;
         top = newNode;
     }
 
     char pop()
     {
-        if (top == NULL)
+        if (top == nullptr)
         {
-            return 0;
+            return ' ';
         }
         StackNode *temp = top;
         top = top->next;
-        char data = temp->data;
+        char letter = temp->letter;
         delete temp;
-        return data;
+        return letter;
     }
 
     char peek()
     {
-        if (top == NULL)
+        if (top == nullptr)
         {
-            return 0;
+            return ' ';
         }
-        return top->data;
+        return top->letter;
     }
 
     bool isEmpty()
     {
-        return top == NULL;
+        return top == nullptr;
     }
 
+    void clear()
+    {
+        while (top != nullptr)
+        {
+            StackNode *temp = top;
+            top = top->next;
+            delete temp;
+        }
+    }
+
+    void print()
+    {
+        StackNode *temp = top;
+        while (temp != nullptr)
+        {
+            cout << temp->letter;
+            temp = temp->next;
+        }
+        cout << endl;
+    }
+
+    string toString()
+    {
+        string str = "";
+        StackNode *temp = top;
+        while (temp != nullptr)
+        {
+            str += temp->letter;
+            temp = temp->next;
+        }
+        return str;
+    }
+
+    int size()
+    {
+        int count = 0;
+        StackNode *temp = top;
+        while (temp != nullptr)
+        {
+            count++;
+            temp = temp->next;
+        }
+        return count;
+    }
+
+    StackNode *getTop()
+    {
+        return top;
+    }
+
+    void setTop(StackNode *top)
+    {
+        this->top = top;
+    }
+
+};
+
+class ListNode
+{
+public:
+    string word;
+    ListNode *next;
+
+    ListNode(string word = "")
+    {
+        this->word = word;
+        this->next = NULL;
+    }
+
+    ~ListNode()
+    {
+        next = NULL;
+    }
 };
 
 int main()
