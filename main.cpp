@@ -3,9 +3,9 @@
 #include <string>
 #include <fstream>
 #include <ncurses.h>
-#include "TextList.h"
-#include "WordStack.h"
-#include "Dictionary.h"
+#include "src/WordStack.h"
+#include "src/TextList.h"
+#include "src/Dictionary.h"
 using namespace std;
 
 int main()
