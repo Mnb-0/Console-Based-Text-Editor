@@ -517,7 +517,11 @@ int main()
         {
             textList.insert(static_cast<char>(ch)); // insert character into the list
         }
-
+        else if (ch == 127) // backspace
+        {
+            textList.remove(); // remove character from the list
+        }
+        
         // print updated list
         string updatedText = textList.toString();
         printw("%s", updatedText.c_str());
