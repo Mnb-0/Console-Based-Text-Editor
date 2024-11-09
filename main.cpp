@@ -402,7 +402,6 @@ public:
 
 /*Store dictionary words to support fast lookups and suggest
 corrections.*/
-// AVL Tree Node structure
 struct TreeNode
 {
     string word;
@@ -574,6 +573,10 @@ int main()
         clrtoeol(); // Clear the line to avoid overwritten text
         printw("Press ESC to quit. Ctrl + L to load. Ctrl + R to save.");
 
+        // Clear the area below the status bar without clearing the status bar itself
+        move(1, 0); // Move to the line below the status bar
+        clrtobot(); // Clear from the current line to the bottom of the screen
+
         // Check for valid characters (printable ASCII range)
         if (ch >= 32 && ch <= 126)
         {
@@ -583,15 +586,41 @@ int main()
         }
         else if (ch == 127 || ch == KEY_BACKSPACE) // handle backspace
         {
-            textList.remove(); // remove character from the list
-            if (cursorX > 0)
+            if (cursorX > 0) // If not at the start of the line
             {
-                cursorX--; // move cursor left if possible
+                textList.remove();      // remove character from the list
+                cursorX--;              // move cursor left
+                move(cursorY, cursorX); // move the cursor position
+                clrtoeol();             // clear the rest of the line to remove any leftover characters
             }
-            else if (cursorY > 1) // move to the previous line if possible
+            else if (cursorY > 1) // If at the start of the line and there is a line above
             {
+                // Move to the previous line
                 cursorY--;
-                cursorX = 0; // adjust cursorX as needed for multiline handling
+                textList.moveCursorLeft(); // move cursor to the end of the previous line
+
+                // Calculate the new cursorX position to the end of the previous line
+                ListNode *temp = textList.getHead();
+                int newCursorX = 0;
+                int lineCount = 1;
+
+                while (temp != nullptr)
+                {
+                    if (lineCount == cursorY)
+                    {
+                        if (temp->letter == '\n')
+                            break;
+                        newCursorX++;
+                    }
+                    if (temp->letter == '\n')
+                        lineCount++;
+                    temp = temp->next;
+                }
+
+                cursorX = newCursorX;   // set cursorX to the end of the previous line
+                textList.remove();      // remove character at the new cursor position
+                move(cursorY, cursorX); // move the cursor to the new position
+                clrtoeol();             // clear the rest of the line
             }
         }
         else if (ch == KEY_LEFT) // move cursor left
@@ -605,6 +634,24 @@ int main()
             {
                 cursorY--;
                 cursorX = 0; // adjust to the actual length of the previous line
+
+                // Calculate the length of the previous line
+                ListNode *temp = textList.getHead();
+                int newCursorX = 0;
+                int lineCount = 1;
+                while (temp != nullptr)
+                {
+                    if (lineCount == cursorY)
+                    {
+                        if (temp->letter == '\n')
+                            break;
+                        newCursorX++;
+                    }
+                    if (temp->letter == '\n')
+                        lineCount++;
+                    temp = temp->next;
+                }
+                cursorX = newCursorX; // set cursorX to the end of the previous line
             }
         }
         else if (ch == KEY_RIGHT) // move cursor right
