@@ -662,7 +662,7 @@ int main()
             char fileNameBuffer[256];        // buffer for file name input
             getstr(fileNameBuffer);          // get file name from user
             fileNameToLoad = fileNameBuffer; // store file name
-
+            noecho();
             clear();                               // clear screen before loading
             textList.loadFromFile(fileNameToLoad); // load file content into the list
 
@@ -691,7 +691,7 @@ int main()
             char fileNameBuffer[256];        // buffer for file name input
             getstr(fileNameBuffer);          // get file name from user
             fileNameToSave = fileNameBuffer; // store file name
-
+            noecho();
             clear();                           // clear screen before saving
             textList.saveFile(fileNameToSave); // save list content to the file
         }
