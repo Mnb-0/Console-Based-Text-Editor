@@ -496,20 +496,35 @@ public:
         file << node->word << endl;
         save(node->right, file);
     }
-
 };
 
 int main()
 {
     initscr();
-    noecho();
-    cbreak();
-    keypad(stdscr, TRUE);
+    noecho();             // disable echoing to allow for control over display
+    cbreak();             // disable line buffering so enter key not needed
+    keypad(stdscr, TRUE); // enable arrows
+
+    TextList textList;
     int ch;
-    while ((ch = getch()) != 'q')
+
+    while ((ch = getch()) != 27) // press ESC to quit
     {
-        printw("Key: %c\n", ch);
+        clear(); // clear screen before updating
+
+        // checks for valid characters
+        if (ch >= 32 && ch <= 126)
+        {
+            textList.insert(static_cast<char>(ch)); // insert character into the list
+        }
+
+        // print updated list
+        string updatedText = textList.toString();
+        printw("%s", updatedText.c_str());
+
+        refresh(); // refresh after every input
     }
-    endwin();
+
+    endwin(); // end ncurses
     return 0;
 }
