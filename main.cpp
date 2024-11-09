@@ -503,43 +503,63 @@ int main()
     initscr();
     noecho();             // disable echoing to allow for control over display
     cbreak();             // disable line buffering so enter key not needed
-    keypad(stdscr, TRUE); // enable arrows
+    keypad(stdscr, TRUE); // enable arrow keys
 
     TextList textList;
     int ch;
+    int cursorX = 0; // track cursor's X position for display
 
     while ((ch = getch()) != 27) // press ESC to quit
     {
         clear(); // clear screen before updating
 
-        // checks for valid characters
+        // checks for valid characters (printable ASCII range)
         if (ch >= 32 && ch <= 126)
         {
             textList.insert(static_cast<char>(ch)); // insert character into the list
+            cursorX++;                              // move cursor position to the right
         }
         else if (ch == 127 || ch == KEY_BACKSPACE) // backspace
         {
             textList.remove(); // remove character from the list
+            if (cursorX > 0)
+            {
+                cursorX--; // move cursor left if possible
+            }
         }
         else if (ch == KEY_LEFT)
         {
-            textList.moveCursorLeft(); // move cursor to the left
+            textList.moveCursorLeft(); // move cursor to the left in the list
+            if (cursorX > 0)
+            {
+                cursorX--; // move cursor left if possible
+            }
         }
         else if (ch == KEY_RIGHT)
         {
-            textList.moveCursorRight(); // move cursor to the right
+            textList.moveCursorRight(); // move cursor to the right in the list
+            if(cursorX < textList.size())
+            {
+                cursorX++; // move cursor right if possible
+            }
         }
         else if (ch == KEY_HOME)
         {
-            textList.moveCursorToStart(); // move cursor to the start
+            textList.moveCursorToStart(); // move cursor to the start of the list
+            cursorX = 0;                  // reset cursor position to the start
         }
         else if (ch == KEY_END)
         {
-            textList.moveCursorToEnd(); // move cursor to the end
+            textList.moveCursorToEnd(); // move cursor to the end of the list
+            cursorX = textList.size();  // set cursor position to the end
         }
+
         // print updated list
         string updatedText = textList.toString();
         printw("%s", updatedText.c_str());
+
+        // move the ncurses cursor to the correct position
+        move(0, cursorX); // set cursor position (row 0, column cursorX)
 
         refresh(); // refresh after every input
     }
