@@ -219,7 +219,8 @@ public:
         {
             return;
         }
-        if (cursor == head)
+
+        if (cursor == head) // deleting at head
         {
             head = head->next;
             if (head != nullptr)
@@ -229,20 +230,29 @@ public:
             delete cursor;
             cursor = head;
         }
-        else if (cursor == tail)
+        else if (cursor == tail) // deleting at end
         {
             tail = tail->prev;
-            tail->next = nullptr;
+            if (tail != nullptr)
+            {
+                tail->next = nullptr;
+            }
             delete cursor;
-            cursor = nullptr;
+            cursor = tail;
         }
-        else
+        else // removing a node in the middle
         {
             ListNode *temp = cursor;
             cursor->prev->next = cursor->next;
             cursor->next->prev = cursor->prev;
-            cursor = cursor->next;
+            cursor = cursor->prev; // move left after deletion
             delete temp;
+        }
+
+        if (head == nullptr) // empty list
+        {
+            cursor = nullptr;
+            tail = nullptr;
         }
     }
 
@@ -538,7 +548,7 @@ int main()
         else if (ch == KEY_RIGHT)
         {
             textList.moveCursorRight(); // move cursor to the right in the list
-            if(cursorX < textList.size())
+            if (cursorX < textList.size())
             {
                 cursorX++; // move cursor right if possible
             }
