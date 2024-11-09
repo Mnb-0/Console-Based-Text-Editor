@@ -517,11 +517,26 @@ int main()
         {
             textList.insert(static_cast<char>(ch)); // insert character into the list
         }
-        else if (ch == 127) // backspace
+        else if (ch == 127 || ch == KEY_BACKSPACE) // backspace
         {
             textList.remove(); // remove character from the list
         }
-        
+        else if (ch == KEY_LEFT)
+        {
+            textList.moveCursorLeft(); // move cursor to the left
+        }
+        else if (ch == KEY_RIGHT)
+        {
+            textList.moveCursorRight(); // move cursor to the right
+        }
+        else if (ch == KEY_HOME)
+        {
+            textList.moveCursorToStart(); // move cursor to the start
+        }
+        else if (ch == KEY_END)
+        {
+            textList.moveCursorToEnd(); // move cursor to the end
+        }
         // print updated list
         string updatedText = textList.toString();
         printw("%s", updatedText.c_str());
