@@ -600,6 +600,12 @@ int main()
             {
                 cursorX--; // move cursor left if possible
             }
+            else if (cursorY > 0) // move to the previous line if possible
+            {
+                cursorY--;
+                // Set cursorX to the length of the previous line (handle multiline)
+                cursorX = 0; // recalculate to the actual length of that line if needed
+            }
         }
         else if (ch == KEY_LEFT) // move cursor left
         {
@@ -608,25 +614,30 @@ int main()
             {
                 cursorX--; // move cursor left if possible
             }
+            else if (cursorY > 0) // move to the previous line if possible
+            {
+                cursorY--;
+                cursorX = 0; // adjust to the actual length of the previous line
+            }
         }
         else if (ch == KEY_RIGHT) // move cursor right
         {
             textList.moveCursorRight(); // move cursor in the list
-            if (cursorX < textList.size())
-            {
-                cursorX++; // move cursor right if possible
-            }
+            cursorX++;                  // move cursor right
+            // Handle moving past the end of a line (e.g., with newlines)
         }
         else if (ch == KEY_UP) // move cursor up
         {
             if (cursorY > 0)
             {
                 cursorY--; // move cursor up if possible
+                // Adjust cursorX to fit within the line length
             }
         }
         else if (ch == KEY_DOWN) // move cursor down
         {
-            cursorY++; // move cursor down
+            cursorY++; // move cursor down (ensure bounds check)
+            // Adjust cursorX to fit within the new line length if needed
         }
         else if (ch == KEY_HOME) // move cursor to start of line
         {
@@ -636,16 +647,17 @@ int main()
         else if (ch == KEY_END) // move cursor to end of line
         {
             textList.moveCursorToEnd(); // move cursor to the end of the list
-            cursorX = textList.size();  // set cursor position to the end
+            cursorX = textList.size();  // set cursor position to the end (adjust for multiline)
         }
         else if (ch == 10) // handle Enter key
         {
             textList.insert('\n'); // insert newline character
-            cursorX = 0;
-            cursorY++;
+            cursorX = 0;           // reset column position
+            cursorY++;             // move to the next line
         }
         else if (ch == 12) // Ctrl + L (load file)
         {
+            echo();
             printw("Enter file name to load: ");
             char fileNameBuffer[256];        // buffer for file name input
             getstr(fileNameBuffer);          // get file name from user
@@ -653,10 +665,28 @@ int main()
 
             clear();                               // clear screen before loading
             textList.loadFromFile(fileNameToLoad); // load file content into the list
-            cursorX = textList.size();             // move cursor to the end after loading
+
+            // Reset cursor positions after loading
+            cursorX = 0;
+            cursorY = 0;
+            ListNode *temp = textList.getHead();
+            while (temp != nullptr)
+            {
+                if (temp->letter == '\n')
+                {
+                    cursorY++;
+                    cursorX = 0;
+                }
+                else
+                {
+                    cursorX++;
+                }
+                temp = temp->next;
+            }
         }
-        else if (ch == 19) // Ctrl + S (save file)
+        else if (ch == 18) // Ctrl + R (save file)
         {
+            echo();
             printw("Enter file name to save: ");
             char fileNameBuffer[256];        // buffer for file name input
             getstr(fileNameBuffer);          // get file name from user
@@ -666,9 +696,22 @@ int main()
             textList.saveFile(fileNameToSave); // save list content to the file
         }
 
-        // print updated list content
+        // print updated list content and handle line breaks properly
         string updatedText = textList.toString();
-        printw("%s", updatedText.c_str());
+        int currentX = 0, currentY = 0;
+        for (char c : updatedText)
+        {
+            if (c == '\n')
+            {
+                currentY++;
+                currentX = 0;
+            }
+            else
+            {
+                mvaddch(currentY, currentX, c); // print each character at the appropriate position
+                currentX++;
+            }
+        }
 
         // move the ncurses cursor to the correct position
         move(cursorY, cursorX); // set cursor position (row cursorY, column cursorX)
