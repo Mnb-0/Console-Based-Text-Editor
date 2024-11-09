@@ -402,23 +402,20 @@ public:
 
 /*Store dictionary words to support fast lookups and suggest
 corrections.*/
+// AVL Tree Node structure
 struct TreeNode
 {
     string word;
     TreeNode *left;
     TreeNode *right;
+    int height;
 
     TreeNode(string word = "")
     {
         this->word = word;
         left = nullptr;
         right = nullptr;
-    }
-
-    ~TreeNode()
-    {
-        left = nullptr;
-        right = nullptr;
+        height = 1;
     }
 };
 
@@ -427,25 +424,111 @@ class Dictionary
     TreeNode *root;
 
 public:
-    Dictionary()
-    {
-        root = nullptr;
-    }
+    Dictionary() { root = nullptr; }
 
-    ~Dictionary()
-    {
-        clear(root);
-    }
+    ~Dictionary() { clear(root); }
 
+    // Destructor helper function
     void clear(TreeNode *node)
     {
         if (node == nullptr)
-        {
             return;
-        }
         clear(node->left);
         clear(node->right);
         delete node;
+    }
+
+    int getHeight(TreeNode *node)
+    {
+        return node == nullptr ? 0 : node->height;
+    }
+
+    int getBalanceFactor(TreeNode *node)
+    {
+        if (node == nullptr)
+            return 0;
+        return getHeight(node->left) - getHeight(node->right);
+    }
+
+    TreeNode *rightRotate(TreeNode *y)
+    {
+        TreeNode *x = y->left;
+        TreeNode *T2 = x->right;
+
+        // Perform rotation
+        x->right = y;
+        y->left = T2;
+
+        // Update heights
+        y->height = max(getHeight(y->left), getHeight(y->right)) + 1;
+        x->height = max(getHeight(x->left), getHeight(x->right)) + 1;
+
+        // Return new root
+        return x;
+    }
+
+    TreeNode *leftRotate(TreeNode *x)
+    {
+        TreeNode *y = x->right;
+        TreeNode *T2 = y->left;
+
+        // Perform rotation
+        y->left = x;
+        x->right = T2;
+
+        // Update heights
+        x->height = max(getHeight(x->left), getHeight(x->right)) + 1;
+        y->height = max(getHeight(y->left), getHeight(y->right)) + 1;
+
+        // Return new root
+        return y;
+    }
+
+    TreeNode *insert(TreeNode *node, string word)
+    {
+        // Standard BST insertion
+        if (node == nullptr)
+            return new TreeNode(word);
+
+        if (word < node->word)
+            node->left = insert(node->left, word);
+        else if (word > node->word)
+            node->right = insert(node->right, word);
+        else // Duplicate words not allowed
+            return node;
+
+        // Update height of this ancestor node
+        node->height = 1 + max(getHeight(node->left), getHeight(node->right));
+
+        // Get the balance factor
+        int balance = getBalanceFactor(node);
+
+        // If the node becomes unbalanced, then there are 4 cases
+
+        // Left Left Case
+        if (balance > 1 && word < node->left->word)
+            return rightRotate(node);
+
+        // Right Right Case
+        if (balance < -1 && word > node->right->word)
+            return leftRotate(node);
+
+        // Left Right Case
+        if (balance > 1 && word > node->left->word)
+        {
+            node->left = leftRotate(node->left);
+            return rightRotate(node);
+        }
+
+        // Right Left Case
+        if (balance < -1 && word < node->right->word)
+        {
+            node->right = rightRotate(node->right);
+            return leftRotate(node);
+        }
+
+        // Return the unchanged node pointer
+        return node;
     }
 
     void insert(string word)
@@ -453,120 +536,20 @@ public:
         root = insert(root, word);
     }
 
-    TreeNode *insert(TreeNode *node, string word)
+    bool search(TreeNode *node, string word)
     {
         if (node == nullptr)
-        {
-            return new TreeNode(word);
-        }
+            return false;
+        if (word == node->word)
+            return true;
         if (word < node->word)
-        {
-            node->left = insert(node->left, word);
-        }
-        else if (word > node->word)
-        {
-            node->right = insert(node->right, word);
-        }
-        return node;
+            return search(node->left, word);
+        return search(node->right, word);
     }
 
     bool search(string word)
     {
         return search(root, word);
-    }
-
-    bool search(TreeNode *node, string word)
-    {
-        if (node == nullptr)
-        {
-            return false;
-        }
-        if (word == node->word)
-        {
-            return true;
-        }
-        if (word < node->word)
-        {
-            return search(node->left, word);
-        }
-        return search(node->right, word);
-    }
-
-    void suggest(string word)
-    {
-        suggest(root, word);
-    }
-
-    void suggest(TreeNode *node, string word)
-    {
-        if (node == nullptr)
-        {
-            return;
-        }
-        if (node->word.find(word) == 0)
-        {
-            cout << node->word << endl;
-        }
-        if (word < node->word)
-        {
-            suggest(node->left, word);
-        }
-        suggest(node->right, word);
-    }
-
-    TreeNode *getRoot()
-    {
-        return root;
-    }
-
-    void setRoot(TreeNode *root)
-    {
-        this->root = root;
-    }
-
-    void print()
-    {
-        print(root);
-    }
-
-    void print(TreeNode *node)
-    {
-        if (node == nullptr)
-        {
-            return;
-        }
-        print(node->left);
-        cout << node->word << endl;
-        print(node->right);
-    }
-
-    void load(string filename)
-    {
-        ifstream file(filename);
-        string word;
-        while (file >> word)
-        {
-            insert(word);
-        }
-        file.close();
-    }
-
-    void save(string filename)
-    {
-        ofstream file(filename);
-        save(root, file);
-        file.close();
-    }
-
-    void save(TreeNode *node, ofstream &file)
-    {
-        if (node == nullptr)
-        {
-            return;
-        }
-        save(node->left, file);
-        file << node->word << endl;
-        save(node->right, file);
     }
 };
 
@@ -579,18 +562,23 @@ int main()
 
     string fileNameToLoad = "", fileNameToSave = ""; // strings for file names
     TextList textList;
+    WordStack wordStack;
     int ch;
     int cursorX = 0; // track cursor's X position for display
-    int cursorY = 0; // track cursor's Y position for display
+    int cursorY = 1; // reserve the first row for status messages
 
     while ((ch = getch()) != 27) // press ESC to quit
     {
-        clear(); // clear screen before updating
+        // Print status message at the top row
+        move(0, 0); // Move to the first row
+        clrtoeol(); // Clear the line to avoid overwritten text
+        printw("Press ESC to quit. Ctrl + L to load. Ctrl + R to save.");
 
-        // check for valid characters (printable ASCII range)
+        // Check for valid characters (printable ASCII range)
         if (ch >= 32 && ch <= 126)
         {
             textList.insert(static_cast<char>(ch)); // insert character into the list
+            wordStack.push(static_cast<char>(ch));  // push character into the stack
             cursorX++;                              // move cursor position to the right
         }
         else if (ch == 127 || ch == KEY_BACKSPACE) // handle backspace
@@ -600,11 +588,10 @@ int main()
             {
                 cursorX--; // move cursor left if possible
             }
-            else if (cursorY > 0) // move to the previous line if possible
+            else if (cursorY > 1) // move to the previous line if possible
             {
                 cursorY--;
-                // Set cursorX to the length of the previous line (handle multiline)
-                cursorX = 0; // recalculate to the actual length of that line if needed
+                cursorX = 0; // adjust cursorX as needed for multiline handling
             }
         }
         else if (ch == KEY_LEFT) // move cursor left
@@ -614,7 +601,7 @@ int main()
             {
                 cursorX--; // move cursor left if possible
             }
-            else if (cursorY > 0) // move to the previous line if possible
+            else if (cursorY > 1) // move to the previous line if possible
             {
                 cursorY--;
                 cursorX = 0; // adjust to the actual length of the previous line
@@ -624,20 +611,17 @@ int main()
         {
             textList.moveCursorRight(); // move cursor in the list
             cursorX++;                  // move cursor right
-            // Handle moving past the end of a line (e.g., with newlines)
         }
         else if (ch == KEY_UP) // move cursor up
         {
-            if (cursorY > 0)
+            if (cursorY > 1)
             {
                 cursorY--; // move cursor up if possible
-                // Adjust cursorX to fit within the line length
             }
         }
         else if (ch == KEY_DOWN) // move cursor down
         {
             cursorY++; // move cursor down (ensure bounds check)
-            // Adjust cursorX to fit within the new line length if needed
         }
         else if (ch == KEY_HOME) // move cursor to start of line
         {
@@ -658,6 +642,8 @@ int main()
         else if (ch == 12) // Ctrl + L (load file)
         {
             echo();
+            move(0, 0);
+            clrtoeol();
             printw("Enter file name to load: ");
             char fileNameBuffer[256];        // buffer for file name input
             getstr(fileNameBuffer);          // get file name from user
@@ -666,9 +652,9 @@ int main()
             clear();                               // clear screen before loading
             textList.loadFromFile(fileNameToLoad); // load file content into the list
 
-            // Reset cursor positions after loading
+            // reset cursor positions after loading
             cursorX = 0;
-            cursorY = 0;
+            cursorY = 1;
             ListNode *temp = textList.getHead();
             while (temp != nullptr)
             {
@@ -687,6 +673,8 @@ int main()
         else if (ch == 18) // Ctrl + R (save file)
         {
             echo();
+            move(0, 0);
+            clrtoeol();
             printw("Enter file name to save: ");
             char fileNameBuffer[256];        // buffer for file name input
             getstr(fileNameBuffer);          // get file name from user
@@ -694,11 +682,14 @@ int main()
             noecho();
             clear();                           // clear screen before saving
             textList.saveFile(fileNameToSave); // save list content to the file
+            move(0, 0);                        // Move back to the status line
+            clrtoeol();
+            printw("File saved successfully to '%s'.", fileNameToSave.c_str());
         }
 
-        // print updated list content and handle line breaks properly
+        // Print updated list content and handle line breaks properly
         string updatedText = textList.toString();
-        int currentX = 0, currentY = 0;
+        int currentX = 0, currentY = 1; // Start printing from the second row
         for (char c : updatedText)
         {
             if (c == '\n')
@@ -713,7 +704,7 @@ int main()
             }
         }
 
-        // move the ncurses cursor to the correct position
+        // Move the ncurses cursor to the correct position
         move(cursorY, cursorX); // set cursor position (row cursorY, column cursorX)
 
         refresh(); // refresh screen after every input
