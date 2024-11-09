@@ -336,6 +336,68 @@ public:
     {
         this->cursor = cursor;
     }
+
+    void loadFromFile(const string &filename)
+    {
+        ifstream file(filename);
+        if (!file.is_open())
+        {
+            printw("Error: Failed to open file '%s' for reading.\n", filename.c_str());
+            return;
+        }
+
+        clear(); // clear the current text before loading new content
+
+        string line;
+        while (getline(file, line))
+        {
+            for (char ch : line)
+            {
+                insert(ch); // insert each character into the list
+            }
+            insert('\n'); // add newline at the end of each line
+        }
+
+        if (file.bad())
+        {
+            printw("Error: An error occurred while reading the file.\n");
+        }
+
+        file.close();
+    }
+
+    void saveFile(const string &filename)
+    {
+        ofstream file(filename);
+        if (!file.is_open())
+        {
+            printw("Error: Failed to open file '%s' for writing.\n", filename.c_str());
+            return;
+        }
+
+        ListNode *temp = head;
+        while (temp != nullptr)
+        {
+            file << temp->letter;
+            if (file.fail())
+            {
+                printw("Error: An error occurred while writing to the file.\n");
+                file.close();
+                return;
+            }
+            temp = temp->next;
+        }
+
+        file.close();
+        if (file.fail())
+        {
+            printw("Error: File did not close properly.\n");
+        }
+        else
+        {
+            printw("File saved successfully to '%s'.\n", filename.c_str());
+        }
+    }
 };
 
 /*Store dictionary words to support fast lookups and suggest
@@ -515,21 +577,23 @@ int main()
     cbreak();             // disable line buffering so enter key not needed
     keypad(stdscr, TRUE); // enable arrow keys
 
+    string fileNameToLoad = "", fileNameToSave = ""; // strings for file names
     TextList textList;
     int ch;
     int cursorX = 0; // track cursor's X position for display
+    int cursorY = 0; // track cursor's Y position for display
 
     while ((ch = getch()) != 27) // press ESC to quit
     {
         clear(); // clear screen before updating
 
-        // checks for valid characters (printable ASCII range)
+        // check for valid characters (printable ASCII range)
         if (ch >= 32 && ch <= 126)
         {
             textList.insert(static_cast<char>(ch)); // insert character into the list
             cursorX++;                              // move cursor position to the right
         }
-        else if (ch == 127 || ch == KEY_BACKSPACE) // backspace
+        else if (ch == 127 || ch == KEY_BACKSPACE) // handle backspace
         {
             textList.remove(); // remove character from the list
             if (cursorX > 0)
@@ -537,41 +601,79 @@ int main()
                 cursorX--; // move cursor left if possible
             }
         }
-        else if (ch == KEY_LEFT)
+        else if (ch == KEY_LEFT) // move cursor left
         {
-            textList.moveCursorLeft(); // move cursor to the left in the list
+            textList.moveCursorLeft(); // move cursor in the list
             if (cursorX > 0)
             {
                 cursorX--; // move cursor left if possible
             }
         }
-        else if (ch == KEY_RIGHT)
+        else if (ch == KEY_RIGHT) // move cursor right
         {
-            textList.moveCursorRight(); // move cursor to the right in the list
+            textList.moveCursorRight(); // move cursor in the list
             if (cursorX < textList.size())
             {
                 cursorX++; // move cursor right if possible
             }
         }
-        else if (ch == KEY_HOME)
+        else if (ch == KEY_UP) // move cursor up
         {
-            textList.moveCursorToStart(); // move cursor to the start of the list
+            if (cursorY > 0)
+            {
+                cursorY--; // move cursor up if possible
+            }
+        }
+        else if (ch == KEY_DOWN) // move cursor down
+        {
+            cursorY++; // move cursor down
+        }
+        else if (ch == KEY_HOME) // move cursor to start of line
+        {
+            textList.moveCursorToStart(); // move cursor to start
             cursorX = 0;                  // reset cursor position to the start
         }
-        else if (ch == KEY_END)
+        else if (ch == KEY_END) // move cursor to end of line
         {
             textList.moveCursorToEnd(); // move cursor to the end of the list
             cursorX = textList.size();  // set cursor position to the end
         }
+        else if (ch == 10) // handle Enter key
+        {
+            textList.insert('\n'); // insert newline character
+            cursorX = 0;
+            cursorY++;
+        }
+        else if (ch == 12) // Ctrl + L (load file)
+        {
+            printw("Enter file name to load: ");
+            char fileNameBuffer[256];        // buffer for file name input
+            getstr(fileNameBuffer);          // get file name from user
+            fileNameToLoad = fileNameBuffer; // store file name
 
-        // print updated list
+            clear();                               // clear screen before loading
+            textList.loadFromFile(fileNameToLoad); // load file content into the list
+            cursorX = textList.size();             // move cursor to the end after loading
+        }
+        else if (ch == 19) // Ctrl + S (save file)
+        {
+            printw("Enter file name to save: ");
+            char fileNameBuffer[256];        // buffer for file name input
+            getstr(fileNameBuffer);          // get file name from user
+            fileNameToSave = fileNameBuffer; // store file name
+
+            clear();                           // clear screen before saving
+            textList.saveFile(fileNameToSave); // save list content to the file
+        }
+
+        // print updated list content
         string updatedText = textList.toString();
         printw("%s", updatedText.c_str());
 
         // move the ncurses cursor to the correct position
-        move(0, cursorX); // set cursor position (row 0, column cursorX)
+        move(cursorY, cursorX); // set cursor position (row cursorY, column cursorX)
 
-        refresh(); // refresh after every input
+        refresh(); // refresh screen after every input
     }
 
     endwin(); // end ncurses
