@@ -454,15 +454,12 @@ public:
         TreeNode *x = y->left;
         TreeNode *T2 = x->right;
 
-        // Perform rotation
         x->right = y;
         y->left = T2;
 
-        // Update heights
         y->height = max(getHeight(y->left), getHeight(y->right)) + 1;
         x->height = max(getHeight(x->left), getHeight(x->right)) + 1;
 
-        // Return new root
         return x;
     }
 
@@ -471,21 +468,18 @@ public:
         TreeNode *y = x->right;
         TreeNode *T2 = y->left;
 
-        // Perform rotation
         y->left = x;
         x->right = T2;
 
-        // Update heights
         x->height = max(getHeight(x->left), getHeight(x->right)) + 1;
         y->height = max(getHeight(y->left), getHeight(y->right)) + 1;
 
-        // Return new root
         return y;
     }
 
     TreeNode *insert(TreeNode *node, string word)
     {
-        // Standard BST insertion
+        // standard BST insertion
         if (node == nullptr)
             return new TreeNode(word);
 
@@ -493,16 +487,13 @@ public:
             node->left = insert(node->left, word);
         else if (word > node->word)
             node->right = insert(node->right, word);
-        else // Duplicate words not allowed
+        else
             return node;
 
-        // Update height of this ancestor node
+        // update height of this ancestor node
         node->height = 1 + max(getHeight(node->left), getHeight(node->right));
 
-        // Get the balance factor
         int balance = getBalanceFactor(node);
-
-        // If the node becomes unbalanced, then there are 4 cases
 
         // Left Left Case
         if (balance > 1 && word < node->left->word)
@@ -526,7 +517,6 @@ public:
             return leftRotate(node);
         }
 
-        // Return the unchanged node pointer
         return node;
     }
 
@@ -613,7 +603,7 @@ void spellCheck(Dictionary &dictionary, const string &word)
         }
 
         // Letter Insertion
-        for (unsigned int i = 0; i <= word.length(); i++) // Note <= for insertion at the end
+        for (unsigned int i = 0; i <= word.length(); i++)
         {
             for (char c = 'a'; c <= 'z'; c++)
             {
@@ -639,14 +629,14 @@ void spellCheck(Dictionary &dictionary, const string &word)
 }
 void displayStatus()
 {
-    move(0, 0); // Move to the first row
-    clrtoeol(); // Clear the line to avoid overwritten text
+    move(0, 0);
+    clrtoeol();
     printw("Press ESC to quit. Ctrl + L to load. Ctrl + R to save.");
 }
 
 void displaySuggestions(const string &currentWord, Dictionary &dictionary)
 {
-    move(1, 0); // Move to the reserved row for suggestions
+    move(1, 0);
     clrtoeol();
     if (!currentWord.empty())
     {
@@ -666,25 +656,25 @@ void handleBackspace(TextList &textList, WordStack &wordStack, string &currentWo
 {
     if (cursorX > 0)
     {
-        textList.remove(); // Remove character from the list
-        wordStack.pop();   // Remove character from the stack
+        textList.remove();
+        wordStack.pop();
         if (!currentWord.empty())
         {
-            currentWord.pop_back(); // Remove last character from currentWord
+            currentWord.pop_back(); // remove last character from currentWord
         }
-        cursorX--;              // Move cursor left
-        move(cursorY, cursorX); // Move cursor to the new position
-        clrtoeol();             // Clear the rest of the line to remove leftover character
+        cursorX--;
+        move(cursorY, cursorX);
+        clrtoeol();             // clear the rest of the line to remove leftover character
     }
 }
 
 void handleSpace(TextList &textList, WordStack &wordStack, string &currentWord, Dictionary &dictionary, int &cursorX)
 {
-    textList.insert(' ');                // Insert space into the list
-    spellCheck(dictionary, currentWord); // Check the current word
-    wordStack.clear();                   // Clear the stack for the next word
-    currentWord.clear();                 // Reset current word tracker
-    cursorX++;                           // Move cursor position to the right
+    textList.insert(' ');                // insert space into the list
+    spellCheck(dictionary, currentWord); // check the current word
+    wordStack.clear();                   // clear the stack for the next word
+    currentWord.clear();                 // reset current word tracker
+    cursorX++; 
 }
 
 void handleFileLoad(TextList &textList, int &cursorX, int &cursorY)
@@ -693,14 +683,14 @@ void handleFileLoad(TextList &textList, int &cursorX, int &cursorY)
     move(0, 0);
     clrtoeol();
     printw("Enter file name to load: ");
-    char fileNameBuffer[256];               // Buffer for file name input
-    getstr(fileNameBuffer);                 // Get file name from user
-    string fileNameToLoad = fileNameBuffer; // Store file name
+    char fileNameBuffer[256];               // buffer for file name input
+    getstr(fileNameBuffer);                 // get file name from user
+    string fileNameToLoad = fileNameBuffer;
     noecho();
-    clear();                               // Clear screen before loading
-    textList.loadFromFile(fileNameToLoad); // Load file content into the list
+    clear();
+    textList.loadFromFile(fileNameToLoad);
 
-    // Reset cursor positions after loading
+    // reset cursor positions after loading
     cursorX = 0;
     cursorY = 2;
 }
@@ -711,13 +701,13 @@ void handleFileSave(TextList &textList)
     move(0, 0);
     clrtoeol();
     printw("Enter file name to save: ");
-    char fileNameBuffer[256];               // Buffer for file name input
-    getstr(fileNameBuffer);                 // Get file name from user
-    string fileNameToSave = fileNameBuffer; // Store file name
+    char fileNameBuffer[256];               // buffer for file name input
+    getstr(fileNameBuffer);                 // get file name from user
+    string fileNameToSave = fileNameBuffer;
     noecho();
-    clear();                           // Clear screen before saving
-    textList.saveFile(fileNameToSave); // Save list content to the file
-    move(0, 0);                        // Move back to the status line
+    clear();
+    textList.saveFile(fileNameToSave);
+    move(0, 0);
     clrtoeol();
     printw("File saved successfully to '%s'.", fileNameToSave.c_str());
 }
@@ -725,7 +715,7 @@ void handleFileSave(TextList &textList)
 void printTextContent(TextList &textList, int &cursorX, int &cursorY)
 {
     string updatedText = textList.toString();
-    int currentX = 0, currentY = 2; // Start printing from the third row
+    int currentX = 0, currentY = 2;
     for (char c : updatedText)
     {
         if (c == '\n')
@@ -735,11 +725,11 @@ void printTextContent(TextList &textList, int &cursorX, int &cursorY)
         }
         else
         {
-            mvaddch(currentY, currentX, c); // Print each character at the appropriate position
+            mvaddch(currentY, currentX, c);
             currentX++;
         }
     }
-    cursorX = currentX; // Update cursor position
+    cursorX = currentX;
     cursorY = currentY;
 }
 
@@ -750,50 +740,50 @@ int main()
     cbreak();
     keypad(stdscr, TRUE);
 
-    string fileNameToLoad = "", fileNameToSave = ""; // Strings for file names
+    string fileNameToLoad = "", fileNameToSave = "";
     TextList textList;
     WordStack wordStack;
-    Dictionary dictionary; // Added dictionary for suggestions
+    Dictionary dictionary;
     dictionary.loadFromFile("dictionary.txt");
 
     int ch;
-    int cursorX = 0;         // Track cursor's X position for display
-    int cursorY = 2;         // Start text entry below the "Suggestions" section
-    string currentWord = ""; // Track current word being formed
+    int cursorX = 0;
+    int cursorY = 2;
+    string currentWord = "";
 
-    while ((ch = getch()) != 27) // Press ESC to quit
+    while ((ch = getch()) != 27) // press ESC to quit
     {
         displayStatus();
         displaySuggestions(currentWord, dictionary);
 
-        // Handle keyboard inputs
-        if (ch >= 32 && ch <= 126) // Printable ASCII range
+        // handle keyboard inputs
+        if (ch >= 32 && ch <= 126) // printable ASCII range
         {
-            textList.insert(static_cast<char>(ch)); // Insert character into the list
-            wordStack.push(static_cast<char>(ch));  // Push character into the stack
-            currentWord += static_cast<char>(ch);   // Build the current word
-            cursorX++;                              // Move cursor position to the right
+            textList.insert(static_cast<char>(ch));
+            wordStack.push(static_cast<char>(ch));
+            currentWord += static_cast<char>(ch);
+            cursorX++;
         }
         else if (ch == 127 || ch == KEY_BACKSPACE)
         {
             handleBackspace(textList, wordStack, currentWord, cursorX, cursorY);
         }
-        else if (ch == ' ') // Space indicates end of word
+        else if (ch == ' ') // space indicates end of word
         {
             handleSpace(textList, wordStack, currentWord, dictionary, cursorX);
         }
-        else if (ch == KEY_LEFT) // Move cursor left
+        else if (ch == KEY_LEFT) // move cursor left
         {
-            textList.moveCursorLeft(); // Move cursor in the list
+            textList.moveCursorLeft();
             if (cursorX > 0)
             {
-                cursorX--; // Move cursor left if possible
+                cursorX--;
             }
         }
-        else if (ch == KEY_RIGHT) // Move cursor right
+        else if (ch == KEY_RIGHT) // move cursor right
         {
-            textList.moveCursorRight(); // Move cursor in the list
-            cursorX++;                  // Move cursor right
+            textList.moveCursorRight();
+            cursorX++;
         }
         else if (ch == 12) // Ctrl + L (load file)
         {
@@ -804,15 +794,15 @@ int main()
             handleFileSave(textList);
         }
 
-        // Print updated text content and handle line breaks properly
+        // print updated text content and handle line breaks
         printTextContent(textList, cursorX, cursorY);
 
-        // Move the ncurses cursor to the correct position
-        move(cursorY, cursorX); // Set cursor position (row cursorY, column cursorX)
+        // move the ncurses cursor to the correct position
+        move(cursorY, cursorX);
 
-        refresh(); // Refresh screen after every input
+        refresh();
     }
 
-    endwin(); // End ncurses
+    endwin();
     return 0;
 }
