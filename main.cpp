@@ -664,7 +664,7 @@ void handleBackspace(TextList &textList, WordStack &wordStack, string &currentWo
         }
         cursorX--;
         move(cursorY, cursorX);
-        clrtoeol();             // clear the rest of the line to remove leftover character
+        clrtoeol(); // clear the rest of the line to remove leftover character
     }
 }
 
@@ -674,7 +674,7 @@ void handleSpace(TextList &textList, WordStack &wordStack, string &currentWord, 
     spellCheck(dictionary, currentWord); // check the current word
     wordStack.clear();                   // clear the stack for the next word
     currentWord.clear();                 // reset current word tracker
-    cursorX++; 
+    cursorX++;
 }
 
 void handleFileLoad(TextList &textList, int &cursorX, int &cursorY)
@@ -683,8 +683,8 @@ void handleFileLoad(TextList &textList, int &cursorX, int &cursorY)
     move(0, 0);
     clrtoeol();
     printw("Enter file name to load: ");
-    char fileNameBuffer[256];               // buffer for file name input
-    getstr(fileNameBuffer);                 // get file name from user
+    char fileNameBuffer[256]; // buffer for file name input
+    getstr(fileNameBuffer);   // get file name from user
     string fileNameToLoad = fileNameBuffer;
     noecho();
     clear();
@@ -701,8 +701,8 @@ void handleFileSave(TextList &textList)
     move(0, 0);
     clrtoeol();
     printw("Enter file name to save: ");
-    char fileNameBuffer[256];               // buffer for file name input
-    getstr(fileNameBuffer);                 // get file name from user
+    char fileNameBuffer[256]; // buffer for file name input
+    getstr(fileNameBuffer);   // get file name from user
     string fileNameToSave = fileNameBuffer;
     noecho();
     clear();
