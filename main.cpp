@@ -256,6 +256,18 @@ public:
         }
     }
 
+    void clear()
+    {
+        while (head != nullptr)
+        {
+            ListNode *temp = head;
+            head = head->next;
+            delete temp;
+        }
+        tail = nullptr;
+        cursor = nullptr;
+    }
+
     void moveCursorLeft()
     {
         if (cursor != nullptr && cursor != head)
@@ -567,6 +579,11 @@ public:
 
 void spellCheck(Dictionary &dictionary, const string &word)
 {
+    if (word.empty())
+    {
+        return;
+    }
+
     if (dictionary.search(word))
     {
         printw("'%s' is correctly spelled.\n", word.c_str());
@@ -757,7 +774,7 @@ int main()
         displaySuggestions(currentWord, dictionary);
 
         // handle keyboard inputs
-        if (ch >= 32 && ch <= 126) // printable ASCII range
+        if (ch > 32 && ch <= 126) // printable ASCII range, excluding space
         {
             textList.insert(static_cast<char>(ch));
             wordStack.push(static_cast<char>(ch));
