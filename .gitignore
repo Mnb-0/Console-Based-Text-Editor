@@ -7,4 +7,6 @@
 *.txt
 *.csv
 *.gitattributes
+!CMakeLists.txt
 /build
+/build-*
